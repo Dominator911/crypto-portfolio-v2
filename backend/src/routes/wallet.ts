@@ -2,16 +2,22 @@ import express from "express";
 
 const router = express.Router();
 
-router.get('/fetch', (req, res) => {
-    //fetch wallets
+// GET/wallets - fetch wallets
+router.get('/', (req, res) => {
+    
 })
 
-router.post('/add', (req, res) => {
-    //add wallet
+// POST/wallet - add wallet
+router.post('/', async (req, res) => {
+    try {
+        
+    }
+    
 })
 
-router.delete('/delete', (req, res) => {
-    //delete wallet
+// DELETE/wallet - delete wallet
+router.delete('/:id', (req, res) => {
+    
 })
 
 export default router;
