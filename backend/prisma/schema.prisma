@@ -1,0 +1,60 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  email     String    @unique
+  password  String
+
+  wallets   Wallet[]
+}
+
+model Wallet {
+  id        String    @id @default(cuid())
+  address   String
+  name      String
+  chain     String               
+  userId    String
+  createdAt DateTime @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  snapshots Snapshot[]
+
+  @@unique([userId, address, chain])
+}
+
+model Snapshot {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  totalValue Float     
+
+  walletId  String
+  wallet    Wallet    @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  snapshotWallets SnapshotWallet[]
+  
+  @@unique([walletId, createdAt]) 
+}
+
+model SnapshotWallet {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  asset     String   
+  balance   Float
+  price     Float    
+
+  snapshotId String
+  snapshot   Snapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@unique([snapshotId, asset])  
+}
