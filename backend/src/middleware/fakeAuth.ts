@@ -7,6 +7,7 @@ export async function fakeAuth( req: any, res: any, next: any) {
     });
 
     req.user = user;
+    req.userId = user?.id;
     
     next();
   } catch (error) {

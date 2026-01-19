@@ -24,7 +24,7 @@ model Wallet {
   name      String
   chain     String               
   userId    String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   snapshots Snapshot[]
