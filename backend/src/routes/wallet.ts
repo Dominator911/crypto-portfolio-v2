@@ -1,8 +1,6 @@
 import express from "express";
 import { isAddress } from "viem";
 import prisma from "../db.js";
-import { getEthBalance } from "../services/balanceService.js";
-import { getEthPrice } from "../services/priceService.js";
 
 const router = express.Router();
 
