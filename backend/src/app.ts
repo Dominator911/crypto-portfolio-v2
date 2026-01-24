@@ -3,6 +3,7 @@ import health from "./routes/health.js";
 import wallet from "./routes/wallet.js";
 import auth from "./routes/auth.js";
 import { authMiddleware } from "./middleware/authMiddleware.js";
+import { startCronJob } from "./services/cronSnapService.js";
 
 const app = express();
 
@@ -22,6 +23,8 @@ app.get("/me", (req, res) => {
 app.use('/api/auth', auth);
 app.use('/health', health);
 app.use('/api/wallet', authMiddleware, wallet);
+
+startCronJob();
 
 
 export default app;

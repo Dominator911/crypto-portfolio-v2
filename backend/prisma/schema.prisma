@@ -16,7 +16,7 @@ model User {
   password  String
 
   wallets        Wallet[]
-  snapshotAssets SnapshotAsset[]
+  snapshots Snapshot[]
 }
 
 model Wallet {
@@ -36,7 +36,12 @@ model Snapshot {
   createdAt DateTime  @default(now())
   totalValue Float    
 
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   snapshotAssets SnapshotAsset[]
+
+  @@unique([userId, createdAt])
 }
 
 model SnapshotAsset {
@@ -47,11 +52,8 @@ model SnapshotAsset {
   balance    Float
   price      Float
 
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   snapshotId String
   snapshot   Snapshot  @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
 
-  @@unique([snapshotId, userId, asset])
+  @@unique([snapshotId, asset])
 }

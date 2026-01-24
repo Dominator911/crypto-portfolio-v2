@@ -1,41 +1,68 @@
 import cron from "node-cron";
-import prisma from "../prisma.js";
-import { getEthBalance } from "./balanceService.js";
-import { getEthPrice } from "./priceService.js";
+import prisma from "../db.js";
+import { supportedAssets } from "./assets.js";
+import { getPrices } from "./priceService.js";
 
-const takeGlobalSnapshot = async () => {
+const takeSnapshots = async () => {
+    
     try {
-        const wallets = await prisma.wallet.findMany();
+        const symbols = supportedAssets.map(a => a.symbol.toLowerCase());
+        const prices = await getPrices(symbols); 
 
-        const price = await getEthPrice();
+        const users = await prisma.user.findMany();
 
-        let count = 0;
-        for (const wallet of wallets) {
-            try {
-                const balance = await getEthBalance(wallet.address);
-                const valueUSD = parseFloat(balance) * price;
+        for (const user of users) {
+            const wallets = await prisma.wallet.findMany({
+                where: { userId: user.id }
+            });
 
-                await prisma.snapshot.create({
+            let totalValue = 0;
+
+            const snapshot = await prisma.snapshot.create({
                     data: {
-                        totalValue: valueUSD,
-                        walletId: wallet.id,
-                        userId: wallet.userId
-                    }
+                        userId: user.id,
+                        totalValue: totalValue,
+                    },
                 });
-                count++;
-            } catch(err) {
-                console.error(`Failed to snapshot wallet ${wallet.address}:`,err.message);
-            }
-        }
-        console.log(`Snapshot complete! Saved ${count} records.`);
-    } catch(err) {
-        console.error('Snapshot Critical Fail:', err);
+
+            for (const asset of supportedAssets) {
+                let assetTotalBalance = 0;
+
+                for (const wallet of wallets) {
+                    if (wallet.chain !== asset.chain) continue;
+
+                    const balance = await asset.getBalance(wallet.address);
+                    assetTotalBalance += balance;
+                }
+
+                const price = prices[asset.symbol.toLowerCase()];
+                const valueCAD = assetTotalBalance * price;
+
+                await prisma.snapshotAsset.create({
+                    data: {
+                        snapshotId: snapshot.id,
+                        asset: asset.symbol,
+                        balance: assetTotalBalance,
+                        price,
+                    },
+                });
+
+                totalValue += valueCAD;
+            } 
+
+            await prisma.snapshot.update({
+                where: { id: snapshot.id },
+                data: { totalValue: totalValue },
+            });
+        } 
+    } catch (error) {
+        console.log("Error taking snapshot:", error);
     }
 };
 
 export const startCronJob = () => {
-    cron.schedule("* * * * *", () => {
-        takeGlobalSnapshot();
+    cron.schedule("0 0 * * *", () => {
+        takeSnapshots();
     });
-    console.log('Cron Job scheduled (Every 1 Minute)');
+    console.log('Cron Job scheduled every day at minute 0');
 };
