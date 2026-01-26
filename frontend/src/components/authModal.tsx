@@ -59,7 +59,7 @@ export default function AuthModal({ open, onClose, initialMode = "login" }: Auth
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || "Authentication failed");
+      if (!res.ok) throw new Error(data.message || "Authentication failed");
 
       handleClose();
       navigate("/dashboard");
