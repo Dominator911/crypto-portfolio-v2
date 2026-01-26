@@ -5,11 +5,16 @@ import AuthModal from "../components/authModal";
 
 export default function HomePage() {
     const [modalOpen, setModalOpen] = useState(false);
-    const [tabIndex, setTabIndex] = useState(0);
+    const [modalMode, setModalMode] = useState<"login" | "signup">("login");
+
+    const openModal = (mode: "login" | "signup") => {
+        setModalMode(mode);
+        setModalOpen(true);
+    }
 
     return (
         <>
-            <Navbar />
+            <Navbar onLoginClick={() => openModal("login")} onSignupClick={() => openModal("signup")} />
             <Container maxWidth="md" sx={{ textAlign: "center", mt: 10 }}>
                     <Typography variant="h3" component="h1" fontWeight="bold" gutterBottom>
                     Track your Crypto Wealth
@@ -17,15 +22,12 @@ export default function HomePage() {
                     <Typography variant="h6" color="text.secondary" paragraph>
                     Real-time balances, historical charts, and multi-wallet tracking in one place.
                     </Typography>
-                    <Button variant="contained" size="large" sx={{ mt: 4, fontWeight: "bold", fontSize: "1.2rem", px: 4 }} onClick={() => openModal(1)}>
+                    <Button variant="contained" size="large" sx={{ mt: 4, fontWeight: "bold", fontSize: "1.2rem", px: 4 }} onClick={() => openModal("signup")}>
                     Get Started
                     </Button>
                 </Container>
 
-                <AuthModal key={tabIndex} open={modalOpen} onClose={() => setModalOpen(false)} initialTab={tabIndex}/>
-            <div>
-
-            </div>
+                <AuthModal open={modalOpen} onClose={() => setModalOpen(false)} initialMode={modalMode} />
         </>
     );
 }
