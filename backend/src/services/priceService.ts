@@ -1,6 +1,6 @@
-export const getPrices = async (symbols) => {
+export const getPrices = async (coingeckoIds: string[]) => {
   try {
-    const ids = symbols.map(s => s.toLowerCase()).join(',');
+    const ids = coingeckoIds.join(',');
     const vs_currency = 'cad';
 
     const res = await fetch(
@@ -9,18 +9,17 @@ export const getPrices = async (symbols) => {
 
     const data = await res.json();
 
-    const prices = {};
-    symbols.forEach((symbol) => {
-      const key = symbol.toLowerCase();
-      prices[symbol] = data[key]?.[vs_currency] ?? 0;
+    const prices: Record<string, number> = {};
+    coingeckoIds.forEach((id) => {
+      prices[id] = data[id]?.[vs_currency] ?? 0;
     });
 
     return prices;
 
   } catch (error) {
     console.error("Error fetching prices from CoinGecko:", error);
-    const fallback = {};
-    symbols.forEach(s => (fallback[s] = 0));
+    const fallback: Record<string, number> = {};
+    coingeckoIds.forEach(id => (fallback[id] = 0));
     return fallback;
   }
 };

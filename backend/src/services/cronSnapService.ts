@@ -6,8 +6,9 @@ import { getPrices } from "./priceService.js";
 const takeSnapshots = async () => {
     
     try {
-        const symbols = supportedAssets.map(a => a.symbol.toLowerCase());
-        const prices = await getPrices(symbols); 
+        const coingeckoIds = supportedAssets.map(a => a.coingeckoId);
+        const prices = await getPrices(coingeckoIds);
+        console.log(`Fetched prices:`, prices);
 
         const users = await prisma.user.findMany();
 
@@ -35,7 +36,10 @@ const takeSnapshots = async () => {
                     assetTotalBalance += balance;
                 }
 
-                const price = prices[asset.symbol.toLowerCase()];
+                const price = prices[asset.coingeckoId];
+                if (!price || price === 0) {
+                    console.warn(`Warning: Price for ${asset.symbol} (${asset.coingeckoId}) is ${price}`);
+                }
                 const valueCAD = assetTotalBalance * price;
 
                 await prisma.snapshotAsset.create({
@@ -61,7 +65,7 @@ const takeSnapshots = async () => {
 };
 
 export const startCronJob = () => {
-    cron.schedule("0 0 * * *", () => {
+    cron.schedule("*/15 * * * *", () => {
         takeSnapshots();
     });
     console.log('Cron Job scheduled every day at minute 0');

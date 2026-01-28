@@ -1,5 +1,4 @@
 import express from "express";
-import cookieParser from "cookie-parser";
 import health from "./routes/health.js";
 import wallet from "./routes/wallet.js";
 import auth from "./routes/auth.js";
@@ -10,7 +9,6 @@ import { startCronJob } from "./services/cronSnapService.js";
 const app = express();
 
 app.use(express.json());
-app.use(cookieParser());
 
 // fake auth applied to ALL routes
 
