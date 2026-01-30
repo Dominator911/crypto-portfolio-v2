@@ -1,17 +1,18 @@
 import {useState, useEffect } from "react";
 import {
-    Container, Grid, Paper, Typography, Box, TextField, Button, 
-    IconButton, Alert, CircularProgress,Card, CardContent, Table, 
+    Container, Grid, Paper, Typography, Box, TextField, Button,
+    IconButton, Alert, CircularProgress,Card, CardContent, Table,
     TableBody, TableCell, TableHead, TableRow,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { useNavigate } from 'react-router-dom';
 
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import Navbar from '../components/navbar';
+import { useAuth } from '../contexts/AuthContext';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 
 interface Wallet {
     id: string;
@@ -20,40 +21,41 @@ interface Wallet {
     chain: string;
 }
 
-export default function dashboardPage() {
+export default function DashboardPage() {
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [netWorth, setNetWorth] = useState(0);
 
     const [address, setAddress] = useState('');
     const [name, setName] = useState('');
     const [loading, setLoading] = useState(false);
-    const [scanning, setScanning] = useState(false);
     const [error, setError] = useState('');
 
-    const [history, setHistory] = useState([]); // Stores the chart data
+    const [history, setHistory] = useState([]);
 
-    // Fetch wallets on load
-    useEffect(() => {
+    const navigate = useNavigate();
+    const { logout } = useAuth();
+
+useEffect(() => {
         fetchLatestPortfolio();
         fetchHistory();
         fetchWallets();
     }, []);
 
     const fetchWallets = async () => {
-    try {
-        const res = await fetch("/api/wallet", { credentials: "include" });
-        const data = await res.json();
-        if (res.ok) {
-            setWallets(data);  // Backend returns array directly
+        try {
+            const res = await fetchWithAuth("/api/wallet");
+            const data = await res.json();
+            if (res.ok) {
+                setWallets(data);
+            }
+        } catch (err) {
+            setError("Failed to load wallets");
         }
-    } catch (err) {
-        setError("Failed to load wallets");
-    }
-};
+    };
 
     const fetchHistory = async () => {
         try {
-            const res = await fetch("/api/portfolio/history", { credentials: "include" });
+            const res = await fetchWithAuth("/api/portfolio/history");
             const data = await res.json();
             if (res.ok) setHistory(data);
         } catch (err) {
@@ -63,56 +65,62 @@ export default function dashboardPage() {
 
     const fetchLatestPortfolio = async () => {
         try {
-            const res = await fetch("/api/portfolio/latest", { credentials: "include",
-                method: "POST"
-            });
+            const res = await fetchWithAuth("/api/portfolio/latest");
             const data = await res.json();
             if (res.ok) {
                 setNetWorth(data.totalValue || 0);
             }
         } catch (err) {
             console.error("Failed to fetch latest portfolio:", err);
-            // Graceful fallback - don't show error to user initially
         }
-    };
+};
 
-    //handle add wallet
     const handleAddWallet = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError("");
 
         try {
-            const res = await fetch("/api/wallet", { credentials: "include",
+            const res = await fetchWithAuth("/api/wallet", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ address, name }),
             });
 
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || "Failed to add");
 
-            // Success: Refresh list and clear form
             setAddress("");
             setName("");
             fetchLatestPortfolio();
 
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
             setLoading(false);
         }
     };
 
-    // Handle Delete Wallet
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure?")) return;
-        await fetch(`/api/wallet/${id}`, {method: "DELETE" });
+        await fetchWithAuth(`/api/wallet/${id}`, {
+            method: "DELETE"
+        });
         fetchLatestPortfolio();
     };
 
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate('/');
+        } catch (err) {
+            console.error('Logout failed:', err);
+        }
+    };
+
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <>
+            <Navbar isAuthenticated={true} onLogout={handleLogout} />
+            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             
             {/* NET WORTH */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -170,11 +178,6 @@ export default function dashboardPage() {
                                         />
                                     </AreaChart>
                                 </ResponsiveContainer>
-                                {/* <ResponsiveContainer>
-                                    <PieChart data={assets}>
-
-                                    </PieChart>
-                                </ResponsiveContainer> */}
                             </>
                         )}
                     </Paper>
@@ -256,5 +259,6 @@ export default function dashboardPage() {
                 </Grid>
             </Grid>
         </Container>
+        </>
     )
 } 

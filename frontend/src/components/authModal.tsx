@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 type AuthMode = "login" | "signup";
 
@@ -27,6 +28,7 @@ export default function AuthModal({ open, onClose, initialMode = "login" }: Auth
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+  const { login, signup } = useAuth();
 
   useEffect(() => {
     setMode(initialMode);
@@ -47,24 +49,16 @@ export default function AuthModal({ open, onClose, initialMode = "login" }: Auth
     e.preventDefault();
     setError("");
 
-    const endpoint =
-      mode === "login" ? "/api/auth/login" : "/api/auth/register";
-
     try {
-      const res = await fetch(endpoint, { credentials: "include",
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      if (mode === "login") {
+        await login(email, password);
+      } else {
+        await signup(email, password);
+      }
 
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.message || "Authentication failed");
-
-      handleClose();
-      navigate("/dashboard");
-    } catch (err: any) {
-      setError(err.message);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authentication failed');
     }
   };
 

@@ -3,14 +3,13 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import validator from "validator";
 import prisma from "../db.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = Router();
 const isProd = process.env.NODE_ENV === "production";
 
-// POST /api/auth/register - register a new user
 router.post("/register", async (req, res) => {
     try {
-        // Extract and validate input        
         const email = req.body.email?.trim().toLowerCase();
         const password = req.body.password;
 
@@ -26,7 +25,6 @@ router.post("/register", async (req, res) => {
             return res.status(400).json({ message: "Password must be at least 8 characters" });
         }
 
-        // Check if email already exists
         const existing = await prisma.user.findUnique({
             where: { email },
         }); 
@@ -35,8 +33,6 @@ router.post("/register", async (req, res) => {
             return res.status(409).json({ message: "Email already in use" });
         } 
 
-        // Hash password with bcrypt using cost factor 10
-        // TODO: increase cost in production if performance allows
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await prisma.user.create({
@@ -53,7 +49,7 @@ router.post("/register", async (req, res) => {
 
         const token = jwt.sign(
             { userId: user.id },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET!,
             {expiresIn: "7d"}
         );
 
@@ -65,7 +61,6 @@ router.post("/register", async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        // Return the created user (without password)
         return res.status(201).json({user});
     } catch (err) {
         console.error("Register error:", err);
@@ -73,11 +68,8 @@ router.post("/register", async (req, res) => {
     }
 });
 
-// POST /api/auth/login - verify credentials, issue JWT cookie on success
 router.post("/login", async (req, res) => {
     try{
-        //TODO: add rate limiting
-
         const email = req.body.email?.trim().toLowerCase();
         const password = req.body.password;
 
@@ -102,7 +94,7 @@ router.post("/login", async (req, res) => {
 
         const token = jwt.sign(
             { userId: user.id },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET!,
             {expiresIn: "7d"}
         );
 
@@ -127,7 +119,6 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// POST /api/auth/logout - clear auth cookie to log the user out
 router.post("/logout", (req, res) => {
     res.cookie("token", "", {
         httpOnly: true,
@@ -138,6 +129,28 @@ router.post("/logout", (req, res) => {
     });
 
     return res.json({ message: "Logged out" });
+});
+
+router.get("/me", authMiddleware, async (req, res) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: (req as any).userId },
+            select: {
+                id: true,
+                email: true,
+                createdAt: true,
+            },
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json(user);
+    } catch (error) {
+        console.error("Failed to fetch user:", error);
+        res.status(500).json({ message: "Failed to fetch user data" });
+    }
 });
 
 export default router;

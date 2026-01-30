@@ -5,7 +5,7 @@ import { getEthPrice } from '../services/priceService.js';
 
 const router = Router();
 
-router.post("/latest", async (req, res) => {
+router.get("/latest", async (req, res) => {
     try {
         const latestSnapshot = await prisma.snapshot.findFirst({
             where: { userId: req.userId },
@@ -34,7 +34,7 @@ router.post("/latest", async (req, res) => {
 
 router.get("/history", async (req, res) => {
     try {
-        const history = await prisma.snapshot.findMany({
+        const snapshots = await prisma.snapshot.findMany({
             where: { userId: req.userId },
             select: {
                 createdAt: true,
@@ -42,6 +42,13 @@ router.get("/history", async (req, res) => {
             },
             orderBy: { createdAt: "desc" }
         });
+
+        // Transform to match frontend expectations
+        const history = snapshots.map(snapshot => ({
+            date: snapshot.createdAt.toISOString().split('T')[0], // YYYY-MM-DD format
+            value: snapshot.totalValue
+        }));
+
         res.status(200).json(history);
         
     } catch (error) {

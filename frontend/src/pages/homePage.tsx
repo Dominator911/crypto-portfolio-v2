@@ -1,11 +1,22 @@
 import Navbar from "../components/navbar";
 import { Container, Typography, Button } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import AuthModal from "../components/authModal";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function HomePage() {
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<"login" | "signup">("login");
+
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/dashboard');
+        }
+    }, [isAuthenticated, navigate]);
 
     const openModal = (mode: "login" | "signup") => {
         setModalMode(mode);

@@ -12,13 +12,10 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// fake auth applied to ALL routes
-
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-// test route to verify fake auth
 app.get("/me", (req, res) => {
   res.json(req.user);
 });

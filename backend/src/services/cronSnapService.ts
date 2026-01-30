@@ -10,12 +10,14 @@ const takeSnapshots = async () => {
         const prices = await getPrices(coingeckoIds);
         console.log(`Fetched prices:`, prices);
 
-        const users = await prisma.user.findMany();
+        const users = await prisma.user.findMany({
+            include: {
+                wallets: true
+            }
+        });
 
         for (const user of users) {
-            const wallets = await prisma.wallet.findMany({
-                where: { userId: user.id }
-            });
+            const wallets = user.wallets;
 
             let totalValue = 0;
 
@@ -65,7 +67,7 @@ const takeSnapshots = async () => {
 };
 
 export const startCronJob = () => {
-    cron.schedule("*/15 * * * *", () => {
+    cron.schedule("* 0 * * *", () => {
         takeSnapshots();
     });
     console.log('Cron Job scheduled every day at minute 0');

@@ -12,7 +12,6 @@ export const darkTheme = createTheme({
         background: {
             default: "#000000ff",
             paper: "rgba(13, 13, 13, 1)",
-            hover: "rgba(26, 26, 26, 1)",
         },
     },
 });
