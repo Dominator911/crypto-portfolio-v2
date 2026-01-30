@@ -13,7 +13,7 @@ const Navbar = ({ onLoginClick, onSignupClick, isAuthenticated, onLogout }: Navb
             <AppBar position="static" color="transparent" elevation={0} sx={{ py: 1, bgcolor: "background.paper",  borderBottom: 1, borderColor: "divider" }}>
                 <Toolbar>
 
-                <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold", color: "white" }}>
+                <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold" }}>
                     Crypto Tracker
                 </Typography>
 

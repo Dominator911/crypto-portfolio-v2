@@ -2,6 +2,7 @@ import { Router } from "express";
 import prisma from '../db.js';
 import { getEthBalance } from '../services/balanceService.js';
 import { getEthPrice } from '../services/priceService.js';
+import { takeSnapshots } from '../services/cronSnapService.js';
 
 const router = Router();
 
@@ -50,10 +51,20 @@ router.get("/history", async (req, res) => {
         }));
 
         res.status(200).json(history);
-        
+
     } catch (error) {
         console.error("Failed to fetch portfolio history:", error);
         res.status(500).json({ message: "Failed to fetch history" });
+    }
+});
+
+router.post("/snapshot", async (_req, res) => {
+    try {
+        await takeSnapshots();
+        res.status(200).json({ message: "Snapshot created successfully" });
+    } catch (error) {
+        console.error("Failed to create snapshot:", error);
+        res.status(500).json({ message: "Failed to create snapshot" });
     }
 });
 

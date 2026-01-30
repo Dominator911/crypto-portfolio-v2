@@ -124,15 +124,13 @@ useEffect(() => {
             
             {/* NET WORTH */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid size={3}>
-                    <Card sx={{ background: 'linear-gradient(135deg, #293f63ff 0%, #0f172a 100%)', color: 'white' }}>
-                        <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Box>
-                                <Typography variant="h6" sx={{ opacity: 0.7 }}>Total Net Worth</Typography>
-                                <Typography variant="h2" fontWeight="bold">
-                                    C${(netWorth || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                </Typography>
-                            </Box>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Card elevation={0} sx={{ bgcolor: 'background.paper' }}>
+                        <CardContent>
+                            <Typography variant="h6" sx={{ opacity: 0.7 }}>Total Net Worth</Typography>
+                            <Typography variant="h3" fontWeight="bold" sx={{ wordBreak: 'break-word' }}>
+                                C${(netWorth || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </Typography>
                         </CardContent>
                     </Card>
                 </Grid>
@@ -141,7 +139,7 @@ useEffect(() => {
             {/* CHART SECTION */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid size={12}>
-                    <Paper sx={{ p: 3, height: 300 }}>
+                    <Paper elevation={0} sx={{ p: 3, height: 300, bgcolor: 'background.paper' }}>
                         <Typography variant="h6" gutterBottom>Portfolio Performance</Typography>
                         
                         {history.length === 0 ? (
@@ -154,8 +152,8 @@ useEffect(() => {
                                     <AreaChart data={history}>
                                         <defs>
                                             <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-                                                <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                                                <stop offset="5%" stopColor="#757ce8" stopOpacity={0.8}/>
+                                                <stop offset="95%" stopColor="#3f50b5" stopOpacity={0}/>
                                             </linearGradient>
                                         </defs>
                                         <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
@@ -165,16 +163,16 @@ useEffect(() => {
                                             tick={{fontSize: 12}}
                                             tickFormatter={(val) => `$${val}`}
                                         />
-                                        <Tooltip 
+                                        <Tooltip
                                             formatter={(value) => [`$${Number(value).toFixed(2)}`, 'Net Worth']}
-                                            contentStyle={{ backgroundColor: '#1e293b', border: 'none' }}
+                                            contentStyle={{ backgroundColor: 'rgba(13, 13, 13, 1)', border: 'none' }}
                                         />
-                                        <Area 
-                                            type="monotone" 
-                                            dataKey="value" 
-                                            stroke="#8884d8" 
-                                            fillOpacity={1} 
-                                            fill="url(#colorValue)" 
+                                        <Area
+                                            type="monotone"
+                                            dataKey="value"
+                                            stroke="#757ce8"
+                                            fillOpacity={1}
+                                            fill="url(#colorValue)"
                                         />
                                     </AreaChart>
                                 </ResponsiveContainer>
@@ -187,11 +185,11 @@ useEffect(() => {
             {/* WALLETS */}
             <Grid container spacing={3}>
                 <Grid size={12}>
-                    <Paper sx={{ p: 0, overflow: "hidden" }}>
+                    <Paper elevation={0} sx={{ p: 0, overflow: "hidden", bgcolor: 'background.paper' }}>
                         {error && <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>}
                         
-                        <Table>
-                            <TableHead sx={{ bgcolor: "background.default" }}>
+                        <Table sx={{ bgcolor: 'background.paper' }}>
+                            <TableHead>
                                 <TableRow>
                                     <TableCell>Wallets</TableCell>
                                     <TableCell align="right">Chain</TableCell>
@@ -201,7 +199,7 @@ useEffect(() => {
                             <TableBody>
 
                                 {/* ADD WALLET */}
-                                <TableRow sx={{ bgcolor: "action.hover" }}>
+                                <TableRow sx={{ bgcolor: 'background.paper' }}>
                                     <TableCell>
                                         <Box component="form" onSubmit={handleAddWallet} sx={{ display: 'flex', gap: 2 }}>
                                             <TextField 

@@ -63,7 +63,7 @@ export default function AuthModal({ open, onClose, initialMode = "login" }: Auth
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth slotProps={{ paper: { elevation: 0, sx: { bgcolor: 'background.paper' } } }}>
       <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
         <IconButton onClick={handleClose}>
           <CloseIcon />

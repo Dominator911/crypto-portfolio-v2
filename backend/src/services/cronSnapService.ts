@@ -67,8 +67,12 @@ const takeSnapshots = async () => {
 };
 
 export const startCronJob = () => {
-    cron.schedule("* 0 * * *", () => {
+    cron.schedule("0 0 * * *", () => {
         takeSnapshots();
+    }, {
+        timezone: "America/Toronto"
     });
-    console.log('Cron Job scheduled every day at minute 0');
+    console.log('Cron Job scheduled daily at midnight (America/Toronto)');
 };
+
+export { takeSnapshots };
